@@ -2,6 +2,7 @@ import subprocess
 import json
 import shutil
 
+
 class PM2Service:
     @staticmethod
     def get_processes():
@@ -9,7 +10,13 @@ class PM2Service:
         if not pm2_path:
             return []
         try:
-            result = subprocess.run(f"{pm2_path} jlist", shell=True, capture_output=True, text=True, check=True)
+            result = subprocess.run(
+                f"{pm2_path} jlist",
+                shell=True,
+                capture_output=True,
+                text=True,
+                check=True,
+            )
             return json.loads(result.stdout)
         except Exception as e:
             print(f"PM2 get_processes Error: {e}")
@@ -20,23 +27,23 @@ class PM2Service:
         pm2_path = shutil.which("pm2")
         if not pm2_path:
             return False
-        
+
         args_str = " ".join(extra_args) if extra_args else ""
         command = f"{pm2_path} {action} {name} {args_str}"
-        
+
         try:
             result = subprocess.run(command, shell=True, capture_output=True, text=True)
-            
+
             if result.returncode != 0:
                 print(f"PM2 Command Failed: {command}")
                 print(f"Error Message: {result.stderr}")
                 return False
-                
+
             return True
         except Exception as e:
             print(f"General Error: {e}")
             return False
-    
+
     @staticmethod
     def save_processes():
         pm2_path = shutil.which("pm2")
@@ -51,7 +58,12 @@ class PM2Service:
         """PM2가 OS 재부팅 시 자동 실행되도록 설정되어 있는지 확인합니다."""
         pm2_path = shutil.which("pm2")
         try:
-            result = subprocess.run(f"{pm2_path} startup", shell=True, capture_output=True, text=True)
-            return "already configured" in result.stdout.lower() or "sudo" in result.stdout.lower()
+            result = subprocess.run(
+                f"{pm2_path} startup", shell=True, capture_output=True, text=True
+            )
+            return (
+                "already configured" in result.stdout.lower()
+                or "sudo" in result.stdout.lower()
+            )
         except:
             return False

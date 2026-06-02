@@ -9,9 +9,9 @@ load_dotenv()
 app = FastAPI(title="PM2Dash")
 
 app.add_middleware(
-    SessionMiddleware, 
+    SessionMiddleware,
     secret_key=os.getenv("SECRET_KEY", "your-secret-key"),
-    max_age=3600 * 24 # 24시간 유지
+    max_age=3600 * 24,  # 24시간 유지
 )
 
 app.include_router(auth_routes.router)
