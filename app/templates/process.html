@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PM2Dash</title>
+    <title>{{ page_title }} - PM2Dash</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -46,16 +46,73 @@
             background: #3f3f46;
         }
     </style>
+    {% include '_theme.html' %}
 </head>
-<body class="p-4 md:p-8">
+<body class="p-4 pt-20 md:p-8 md:pt-20 lg:pt-8 lg:pl-72">
+    <button id="sidebarMenuButton" type="button" class="fixed top-4 left-4 z-50 lg:hidden w-11 h-11 rounded-xl border border-zinc-800 bg-zinc-900 text-zinc-300 shadow-xl" aria-label="사이드바 열기" aria-expanded="false">
+        <span class="text-xl leading-none">☰</span>
+    </button>
+
+    <div id="sidebarOverlay" class="hidden fixed inset-0 z-30 bg-black/60 backdrop-blur-sm lg:hidden"></div>
+
+    <aside id="sidebar" class="fixed inset-y-0 left-0 z-40 w-64 -translate-x-full lg:translate-x-0 border-r border-zinc-800 bg-zinc-900 p-4 transition-transform duration-200">
+        <div class="flex h-full flex-col">
+            <div class="flex items-center gap-3 px-2 py-3">
+                <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-600 text-sm font-black text-white shadow-lg shadow-blue-900/20">P2</div>
+                <div>
+                    <p class="font-bold tracking-tight text-white">PM2Dash</p>
+                    <p class="text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-500">Server Console</p>
+                </div>
+            </div>
+
+            <nav class="mt-7 space-y-1" aria-label="대시보드 메뉴">
+                <a href="/" class="sidebar-link flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm {{ 'bg-blue-500/10 font-bold text-blue-400' if active_page == 'overview' else 'font-semibold text-zinc-400 hover:bg-zinc-800/50 hover:text-zinc-100' }}" {% if active_page == 'overview' %}aria-current="page"{% endif %}>
+                    <span class="flex h-7 w-7 items-center justify-center rounded-lg text-xs {{ 'bg-blue-500/10' if active_page == 'overview' else 'bg-zinc-800' }}">⌂</span>
+                    개요
+                </a>
+                <a href="/server" class="sidebar-link flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm {{ 'bg-blue-500/10 font-bold text-blue-400' if active_page == 'server' else 'font-semibold text-zinc-400 hover:bg-zinc-800/50 hover:text-zinc-100' }}" {% if active_page == 'server' %}aria-current="page"{% endif %}>
+                    <span class="flex h-7 w-7 items-center justify-center rounded-lg text-[10px] font-mono {{ 'bg-blue-500/10' if active_page == 'server' else 'bg-zinc-800' }}">OPS</span>
+                    서버 & 프로세스
+                </a>
+                <a href="/ai-usage" class="sidebar-link flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm {{ 'bg-blue-500/10 font-bold text-blue-400' if active_page == 'ai_usage' else 'font-semibold text-zinc-400 hover:bg-zinc-800/50 hover:text-zinc-100' }}" {% if active_page == 'ai_usage' %}aria-current="page"{% endif %}>
+                    <span class="flex h-7 w-7 items-center justify-center rounded-lg text-[10px] font-mono {{ 'bg-blue-500/10' if active_page == 'ai_usage' else 'bg-zinc-800' }}">AI</span>
+                    AI 사용량
+                </a>
+            </nav>
+
+            <div class="mt-auto rounded-2xl border border-zinc-800 bg-zinc-950 p-3">
+                <div class="mb-3 flex items-center gap-2">
+                    <span class="h-2 w-2 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.6)]"></span>
+                    <div>
+                        <p class="text-xs font-bold text-zinc-200">Dashboard Online</p>
+                        <p class="text-[10px] text-zinc-500">실시간 모니터링 중</p>
+                    </div>
+                </div>
+                <a href="/logout" class="block rounded-lg border border-zinc-800 px-3 py-2 text-center text-xs font-bold text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100">로그아웃</a>
+            </div>
+        </div>
+    </aside>
+
     <div class="max-w-7xl mx-auto">
         <div class="mb-8 flex flex-col xl:flex-row xl:items-end justify-between gap-6">
             <div>
-                <h2 class="text-2xl font-bold text-white tracking-tight">Process Manager</h2>
-                <p class="text-zinc-400 text-sm">실시간 프로세스 모니터링 및 자원 제어</p>
+                <h1 class="text-2xl font-bold text-white tracking-tight">{{ page_title }}</h1>
+                <p class="text-zinc-400 text-sm">{{ page_description }}</p>
             </div>
 
             <div class="flex flex-col sm:flex-row items-center gap-3 w-full xl:w-auto">
+                <button id="themeToggle" type="button" class="theme-toggle" aria-label="테마 변경" aria-pressed="true">
+                    <span class="theme-option" data-theme-value="light">
+                        <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.93 4.93l1.42 1.42M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.42-1.42M17.66 6.34l1.41-1.41"></path></svg>
+                        화이트
+                    </span>
+                    <span class="theme-option" data-theme-value="dark">
+                        <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+                        다크
+                    </span>
+                </button>
+
+                {% if active_page == 'server' %}
                 <div id="startupBadge" class="px-3 py-2 rounded-lg text-[11px] font-bold border border-zinc-800 bg-zinc-900/50 text-zinc-500 transition-all">
                     STARTUP: CHECKING...
                 </div>
@@ -75,10 +132,42 @@
                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"></path><path d="M21 3v5h-5"></path><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"></path><path d="M8 16H3v5"></path></svg>
                     새로고침
                 </button>
+                {% endif %}
             </div>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-4 gap-4 mb-8">
+        {% if active_page == 'overview' %}
+        <section class="space-y-5">
+            <div class="relative overflow-hidden rounded-3xl border border-zinc-800 bg-zinc-900/30 p-6 sm:p-8">
+                <div class="absolute -right-16 -top-20 h-56 w-56 rounded-full bg-blue-500/10 blur-3xl"></div>
+                <div class="relative max-w-2xl">
+                    <span class="inline-flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-emerald-500">
+                        <span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>Dashboard Online
+                    </span>
+                    <h2 class="mt-5 text-2xl font-bold tracking-tight text-white sm:text-3xl">관리할 영역을 선택하세요.</h2>
+                    <p class="mt-2 text-sm leading-6 text-zinc-400">서버 자원과 PM2 프로세스를 통합 페이지에서 관리하고, AI 도구 사용량은 별도 페이지에서 확인할 수 있습니다.</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <a href="/server" class="group rounded-2xl border border-zinc-800 bg-zinc-900/30 p-5 hover:border-blue-500/40 hover:bg-zinc-900/50">
+                    <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-500/10 font-mono text-xs font-bold text-blue-400">OPS</div>
+                    <h3 class="mt-5 font-bold text-zinc-100">서버 & 프로세스</h3>
+                    <p class="mt-1 text-xs leading-5 text-zinc-500">서버 자원과 PM2 프로세스 상태, 로그 및 제어 기능을 함께 관리합니다.</p>
+                    <p class="mt-5 text-xs font-bold text-blue-400">페이지 열기 →</p>
+                </a>
+                <a href="/ai-usage" class="group rounded-2xl border border-zinc-800 bg-zinc-900/30 p-5 hover:border-orange-500/40 hover:bg-zinc-900/50">
+                    <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-orange-500/10 font-mono text-xs font-bold text-orange-400">AI</div>
+                    <h3 class="mt-5 font-bold text-zinc-100">AI 사용량</h3>
+                    <p class="mt-1 text-xs leading-5 text-zinc-500">Claude Code와 Codex의 최근 토큰 사용 기록을 비교합니다.</p>
+                    <p class="mt-5 text-xs font-bold text-orange-400">페이지 열기 →</p>
+                </a>
+            </div>
+        </section>
+        {% endif %}
+
+        {% if active_page == 'server' %}
+        <div id="server-overview" class="grid grid-cols-1 lg:grid-cols-4 gap-4 mb-8 scroll-mt-6">
             <div class="p-5 rounded-2xl border border-zinc-800 bg-zinc-900/20 backdrop-blur-sm flex flex-col justify-between h-72">
                 <div>
                     <div class="flex justify-between items-center">
@@ -154,8 +243,87 @@
                 </div>
             </div>
         </div>
+        {% endif %}
 
-        <div class="card rounded-2xl overflow-hidden border border-zinc-800 bg-zinc-900/30">
+        {% if active_page == 'ai_usage' %}
+        <section id="ai-usage" class="mb-8 scroll-mt-6">
+            <div class="mb-4 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+                <div>
+                    <div class="flex items-center gap-2">
+                        <h2 class="text-lg font-bold text-white">AI Usage</h2>
+                        <span class="rounded-full border border-zinc-800 bg-zinc-900/50 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-zinc-500">Local logs · 7 days</span>
+                    </div>
+                    <p class="mt-1 text-xs text-zinc-500">서버에 연결된 Claude Code와 Codex의 로컬 세션 기록 기준입니다.</p>
+                </div>
+                <button id="aiUsageRefresh" type="button" class="self-start rounded-lg border border-zinc-800 bg-zinc-900 px-3 py-2 text-xs font-bold text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100">사용량 새로고침</button>
+            </div>
+
+            <div class="grid grid-cols-1 gap-4 xl:grid-cols-5">
+                <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:col-span-2 xl:grid-cols-1">
+                    <article id="aiCard-claude" class="rounded-2xl border border-zinc-800 bg-zinc-900/30 p-5">
+                        <div class="flex items-start justify-between gap-4">
+                            <div>
+                                <div class="mb-3 flex items-center gap-2">
+                                    <span class="h-2.5 w-2.5 rounded-full bg-[#d97757]"></span>
+                                    <h3 class="font-bold text-zinc-100">Claude Code</h3>
+                                </div>
+                                <p class="ai-total font-mono text-3xl font-bold text-white">—</p>
+                                <p class="mt-1 text-[10px] font-bold uppercase tracking-wider text-zinc-500">Total tokens</p>
+                            </div>
+                            <span class="ai-status rounded-full border border-zinc-800 bg-zinc-800 px-2.5 py-1 text-[10px] font-bold text-zinc-500">확인 중</span>
+                        </div>
+                        <div class="mt-5 grid grid-cols-3 gap-2 border-t border-zinc-800 pt-4 text-center">
+                            <div><p class="ai-input font-mono text-xs font-bold text-zinc-200">—</p><p class="mt-1 text-[9px] uppercase text-zinc-500">Input</p></div>
+                            <div><p class="ai-output font-mono text-xs font-bold text-zinc-200">—</p><p class="mt-1 text-[9px] uppercase text-zinc-500">Output</p></div>
+                            <div><p class="ai-cache font-mono text-xs font-bold text-zinc-200">—</p><p class="mt-1 text-[9px] uppercase text-zinc-500">Cache</p></div>
+                        </div>
+                        <div class="mt-4 flex items-center justify-between gap-3 text-[10px] text-zinc-500"><span class="ai-meta max-w-[65%] truncate">세션 — · 모델 —</span><span class="ai-last whitespace-nowrap">최근 활동 —</span></div>
+                    </article>
+
+                    <article id="aiCard-codex" class="rounded-2xl border border-zinc-800 bg-zinc-900/30 p-5">
+                        <div class="flex items-start justify-between gap-4">
+                            <div>
+                                <div class="mb-3 flex items-center gap-2">
+                                    <span class="h-2.5 w-2.5 rounded-full bg-[#10a37f]"></span>
+                                    <h3 class="font-bold text-zinc-100">Codex</h3>
+                                </div>
+                                <p class="ai-total font-mono text-3xl font-bold text-white">—</p>
+                                <p class="mt-1 text-[10px] font-bold uppercase tracking-wider text-zinc-500">Total tokens</p>
+                            </div>
+                            <span class="ai-status rounded-full border border-zinc-800 bg-zinc-800 px-2.5 py-1 text-[10px] font-bold text-zinc-500">확인 중</span>
+                        </div>
+                        <div class="mt-5 grid grid-cols-3 gap-2 border-t border-zinc-800 pt-4 text-center">
+                            <div><p class="ai-input font-mono text-xs font-bold text-zinc-200">—</p><p class="mt-1 text-[9px] uppercase text-zinc-500">Input</p></div>
+                            <div><p class="ai-output font-mono text-xs font-bold text-zinc-200">—</p><p class="mt-1 text-[9px] uppercase text-zinc-500">Output</p></div>
+                            <div><p class="ai-cache font-mono text-xs font-bold text-zinc-200">—</p><p class="mt-1 text-[9px] uppercase text-zinc-500">Cache</p></div>
+                        </div>
+                        <div class="mt-4 flex items-center justify-between gap-3 text-[10px] text-zinc-500"><span class="ai-meta max-w-[65%] truncate">세션 — · 모델 —</span><span class="ai-last whitespace-nowrap">최근 활동 —</span></div>
+                    </article>
+                </div>
+
+                <div class="rounded-2xl border border-zinc-800 bg-zinc-900/30 p-5 xl:col-span-3">
+                    <div class="mb-4 flex items-center justify-between">
+                        <div>
+                            <p class="text-xs font-bold uppercase tracking-wider text-zinc-500">Daily token usage</p>
+                            <p id="aiUsageCaption" class="mt-1 text-[10px] text-zinc-600">연결 상태를 확인하고 있습니다.</p>
+                        </div>
+                        <div class="flex items-center gap-3 text-[10px] font-bold text-zinc-500">
+                            <span class="flex items-center gap-1.5"><span class="h-2 w-2 rounded-full bg-[#d97757]"></span>Claude</span>
+                            <span class="flex items-center gap-1.5"><span class="h-2 w-2 rounded-full bg-[#10a37f]"></span>Codex</span>
+                        </div>
+                    </div>
+                    <div class="h-64 w-full"><canvas id="aiUsageChart"></canvas></div>
+                </div>
+            </div>
+        </section>
+        {% endif %}
+
+        {% if active_page == 'server' %}
+        <div class="mb-4 mt-2">
+            <h2 class="text-lg font-bold text-white">PM2 Processes</h2>
+            <p class="mt-1 text-xs text-zinc-500">실행 상태, 사용량, 로그와 프로세스 제어</p>
+        </div>
+        <div id="processes" class="card scroll-mt-6 rounded-2xl overflow-hidden border border-zinc-800 bg-zinc-900/30">
             <div class="overflow-x-auto">
                 <table class="w-full text-left text-sm whitespace-nowrap">
                     <thead>
@@ -231,8 +399,10 @@
                 </table>
             </div>
         </div>
+        {% endif %}
     </div>
 
+    {% if active_page == 'server' %}
     <div id="logModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
         <div class="bg-zinc-900 border border-zinc-800 w-full max-w-5xl h-[75vh] rounded-2xl flex flex-col overflow-hidden shadow-2xl scale-up-animation">
             <div class="p-4 border-b border-zinc-800 flex justify-between items-center bg-zinc-900">
@@ -253,14 +423,24 @@
             </div>
         </div>
     </div>
+    {% endif %}
 
     <script>
         let logSocket = null;
         const charts = {};
         const maxDataPoints = 20;
+        let aiUsageChart = null;
+
+        function getChartThemeColors() {
+            const isLight = document.documentElement.dataset.theme === 'light';
+            return isLight
+                ? { grid: '#d4d4d8', ticks: '#52525b' }
+                : { grid: '#27272a', ticks: '#71717a' };
+        }
 
         function initChart(name) {
             const ctx = document.getElementById(`chart-${name}`).getContext('2d');
+            const themeColors = getChartThemeColors();
             charts[name] = new Chart(ctx, {
                 type: 'line',
                 data: {
@@ -297,14 +477,14 @@
                             position: 'left',
                             min: 0,
                             max: 100,
-                            grid: { color: '#27272a' },
-                            ticks: { color: '#71717a', font: { size: 9 } }
+                            grid: { color: themeColors.grid },
+                            ticks: { color: themeColors.ticks, font: { size: 9 } }
                         },
                         'y-mem': {
                             type: 'linear',
                             position: 'right',
                             grid: { drawOnChartArea: false },
-                            ticks: { color: '#71717a', font: { size: 9 } }
+                            ticks: { color: themeColors.ticks, font: { size: 9 } }
                         }
                     }
                 }
@@ -321,11 +501,146 @@
             }
         }
 
+        function formatTokenCount(value) {
+            const amount = Number(value || 0);
+            if (amount >= 1000000) return `${(amount / 1000000).toFixed(amount >= 10000000 ? 1 : 2)}M`;
+            if (amount >= 1000) return `${(amount / 1000).toFixed(amount >= 100000 ? 0 : 1)}K`;
+            return amount.toLocaleString('ko-KR');
+        }
+
+        function formatLastActivity(value) {
+            if (!value) return '최근 활동 —';
+            const timestamp = new Date(value);
+            if (Number.isNaN(timestamp.getTime())) return '최근 활동 —';
+            return timestamp.toLocaleString('ko-KR', {
+                month: 'numeric',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        function renderAIProvider(provider) {
+            const card = document.getElementById(`aiCard-${provider.id}`);
+            if (!card) return;
+
+            card.querySelector('.ai-total').innerText = formatTokenCount(provider.total_tokens);
+            card.querySelector('.ai-input').innerText = formatTokenCount(provider.input_tokens);
+            card.querySelector('.ai-output').innerText = formatTokenCount(provider.output_tokens);
+            card.querySelector('.ai-cache').innerText = formatTokenCount(provider.cache_tokens);
+            const meta = card.querySelector('.ai-meta');
+            meta.innerText = `세션 ${provider.sessions} · ${provider.model || '모델 정보 없음'}`;
+            meta.title = meta.innerText;
+            card.querySelector('.ai-last').innerText = formatLastActivity(provider.last_activity);
+
+            const status = card.querySelector('.ai-status');
+            if (provider.connected && provider.has_data) {
+                status.innerText = '연결됨';
+                status.className = 'ai-status rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-1 text-[10px] font-bold text-emerald-500';
+            } else if (provider.connected || provider.installed) {
+                status.innerText = provider.installed ? '설치됨 · 기록 없음' : '연결됨 · 기록 없음';
+                status.className = 'ai-status rounded-full border border-amber-500/20 bg-amber-500/10 px-2.5 py-1 text-[10px] font-bold text-amber-500';
+            } else {
+                status.innerText = '미연결';
+                status.className = 'ai-status rounded-full border border-zinc-800 bg-zinc-800 px-2.5 py-1 text-[10px] font-bold text-zinc-500';
+            }
+        }
+
+        function renderAIUsageChart(providers) {
+            const canvas = document.getElementById('aiUsageChart');
+            if (!canvas || providers.length === 0) return;
+
+            const labels = providers[0].daily.map((day) => {
+                const date = new Date(`${day.date}T00:00:00`);
+                return date.toLocaleDateString('ko-KR', { month: 'numeric', day: 'numeric' });
+            });
+            const datasets = providers.map((provider) => ({
+                label: provider.name,
+                data: provider.daily.map((day) => day.total_tokens),
+                backgroundColor: `${provider.accent}cc`,
+                borderColor: provider.accent,
+                borderWidth: 1,
+                borderRadius: 5,
+                maxBarThickness: 32
+            }));
+            const themeColors = getChartThemeColors();
+
+            if (aiUsageChart) {
+                aiUsageChart.data.labels = labels;
+                aiUsageChart.data.datasets = datasets;
+                aiUsageChart.options.scales.y.grid.color = themeColors.grid;
+                aiUsageChart.options.scales.y.ticks.color = themeColors.ticks;
+                aiUsageChart.options.scales.x.ticks.color = themeColors.ticks;
+                aiUsageChart.update();
+                return;
+            }
+
+            aiUsageChart = new Chart(canvas.getContext('2d'), {
+                type: 'bar',
+                data: { labels, datasets },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: { mode: 'index', intersect: false },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: (context) => `${context.dataset.label}: ${Number(context.raw).toLocaleString('ko-KR')} tokens`
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: { display: false },
+                            ticks: { color: themeColors.ticks, font: { size: 10 } }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: themeColors.grid },
+                            ticks: {
+                                color: themeColors.ticks,
+                                font: { size: 9 },
+                                callback: (value) => formatTokenCount(value)
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        async function updateAIUsage() {
+            const caption = document.getElementById('aiUsageCaption');
+            const refreshButton = document.getElementById('aiUsageRefresh');
+            if (!caption || !refreshButton) return;
+            refreshButton.disabled = true;
+            refreshButton.classList.add('opacity-60');
+            try {
+                const response = await fetch('/api/ai-usage?days=7');
+                if (!response.ok) throw new Error('AI usage request failed');
+                const data = await response.json();
+                data.providers.forEach(renderAIProvider);
+                renderAIUsageChart(data.providers);
+
+                const providersWithData = data.providers.filter((provider) => provider.has_data).length;
+                caption.innerText = providersWithData > 0
+                    ? `${providersWithData}개 서비스의 최근 ${data.window_days}일 로컬 사용 기록`
+                    : '연결된 로컬 세션 기록이 없습니다.';
+            } catch (error) {
+                caption.innerText = 'AI 사용량 정보를 불러오지 못했습니다.';
+                console.error('AI usage update failed:', error);
+            } finally {
+                refreshButton.disabled = false;
+                refreshButton.classList.remove('opacity-60');
+            }
+        }
+
         async function checkStartupStatus() {
+            const badge = document.getElementById('startupBadge');
+            if (!badge) return;
             try {
                 const response = await fetch('/startup-status');
                 const data = await response.json();
-                const badge = document.getElementById('startupBadge');
                 if (data.is_registered) {
                     badge.innerText = "STARTUP: REGISTERED";
                     badge.className = "px-3 py-2 rounded-lg text-[11px] font-bold border border-green-500/20 bg-green-500/10 text-green-500 transition-all";
@@ -347,6 +662,7 @@
         }
 
         async function updateServerStats() {
+            if (!document.getElementById('srvCpuText')) return;
             try {
                 const response = await fetch('/server-stats');
                 if (!response.ok) return;
@@ -400,6 +716,7 @@
         }
 
         async function updateStats() {
+            if (!document.getElementById('pm2-list-body')) return;
             try {
                 const response = await fetch('/status');
                 if (!response.ok) return;
@@ -566,18 +883,69 @@
                 logSocket.close();
                 logSocket = null;
             }
-            document.getElementById('logModal').classList.add('hidden');
+            const modal = document.getElementById('logModal');
+            if (!modal) return;
+            modal.classList.add('hidden');
             document.body.style.overflow = 'auto';
         }
 
-        setInterval(updateStats, 1000);
-        setInterval(updateServerStats, 1000);
-        updateStats();
-        updateServerStats();
-        checkStartupStatus();
+        if (document.getElementById('pm2-list-body')) {
+            updateStats();
+            checkStartupStatus();
+            setInterval(updateStats, 1000);
+        }
+        if (document.getElementById('srvCpuText')) {
+            updateServerStats();
+            setInterval(updateServerStats, 1000);
+        }
+        if (document.getElementById('aiUsageChart')) {
+            updateAIUsage();
+            setInterval(updateAIUsage, 60000);
+        }
+
+        const sidebar = document.getElementById('sidebar');
+        const sidebarOverlay = document.getElementById('sidebarOverlay');
+        const sidebarMenuButton = document.getElementById('sidebarMenuButton');
+
+        function setSidebarOpen(isOpen) {
+            sidebar.classList.toggle('-translate-x-full', !isOpen);
+            sidebarOverlay.classList.toggle('hidden', !isOpen);
+            sidebarMenuButton.setAttribute('aria-expanded', String(isOpen));
+            sidebarMenuButton.setAttribute('aria-label', isOpen ? '사이드바 닫기' : '사이드바 열기');
+        }
+
+        sidebarMenuButton.addEventListener('click', () => {
+            setSidebarOpen(sidebar.classList.contains('-translate-x-full'));
+        });
+        sidebarOverlay.addEventListener('click', () => setSidebarOpen(false));
+        document.querySelectorAll('.sidebar-link').forEach((link) => {
+            link.addEventListener('click', () => {
+                if (window.innerWidth < 1024) setSidebarOpen(false);
+            });
+        });
+        document.getElementById('aiUsageRefresh')?.addEventListener('click', updateAIUsage);
 
         window.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') closeLogModal();
+            if (e.key === 'Escape') {
+                closeLogModal();
+                if (window.innerWidth < 1024) setSidebarOpen(false);
+            }
+        });
+
+        window.addEventListener('pm2dash:themechange', () => {
+            const themeColors = getChartThemeColors();
+            Object.values(charts).forEach((chart) => {
+                chart.options.scales['y-cpu'].grid.color = themeColors.grid;
+                chart.options.scales['y-cpu'].ticks.color = themeColors.ticks;
+                chart.options.scales['y-mem'].ticks.color = themeColors.ticks;
+                chart.update('none');
+            });
+            if (aiUsageChart) {
+                aiUsageChart.options.scales.y.grid.color = themeColors.grid;
+                aiUsageChart.options.scales.y.ticks.color = themeColors.ticks;
+                aiUsageChart.options.scales.x.ticks.color = themeColors.ticks;
+                aiUsageChart.update('none');
+            }
         });
     </script>
 </body>

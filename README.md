@@ -11,6 +11,9 @@ FastAPI 기반의 실시간 PM2 프로세스 모니터링 및 관리 대시보�
 * 프로세스 제어: 웹 UI에서 즉시 Restart, Stop, Delete, Watch 모드 전환 가능
 * 실시간 로그 스트리밍: WebSocket을 통한 실시간 프로세스 로그 확인
 * 보안 접속: 환경 변수 기반의 관리자 로그인 기능 (ID/PW 세션 인증)
+* AI 사용량: 서버의 Claude Code 및 Codex 로컬 세션 기록을 최근 7일 그래프로 집계
+* 테마 및 탐색: 화이트/다크 모드와 반응형 사이드바 제공
+* Rich 터미널 로그: 실행 정보 패널, 컬러 로그 레벨 및 읽기 쉬운 오류 traceback 제공
 
 ## 시작하기
 
@@ -30,6 +33,18 @@ ADMIN_USER=admin
 ADMIN_PASS=admin1234
 SECRET_KEY=your_random_secret_key_here
 PORT=8000
+HOST=0.0.0.0
+LOG_LEVEL=info
+APP_ENV=production
+```
+
+오류 traceback에 로컬 변수까지 표시하려면 개발 환경에서만 `LOG_TRACEBACK_LOCALS=true`를 설정하세요. 민감한 값이 노출될 수 있으므로 운영 환경에서는 기본값 `false`를 권장합니다.
+
+Claude Code와 Codex가 일반적인 사용자 홈 디렉터리가 아닌 경로에 데이터를 저장한다면 아래 값을 추가할 수 있습니다. 인증 키 자체는 읽지 않으며, 지정된 경로의 로컬 세션 기록만 집계합니다.
+
+```env
+CLAUDE_DATA_DIR=/home/user/.claude
+CODEX_DATA_DIR=/home/user/.codex
 ```
 
 ### 3. 대시보드 실행

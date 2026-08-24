@@ -1,6 +1,7 @@
 uvicorn
 fastapi
 requests
+rich>=14.1.0
 jinja2
 python-multipart
 websockets

@@ -1,0 +1,218 @@
+<script>
+    (() => {
+        const storageKey = 'pm2dash-theme';
+
+        function getSavedTheme() {
+            try {
+                const savedTheme = localStorage.getItem(storageKey);
+                if (savedTheme === 'light' || savedTheme === 'dark') return savedTheme;
+            } catch (error) {
+                // 저장소를 사용할 수 없는 환경에서는 시스템 설정을 사용합니다.
+            }
+            return window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+        }
+
+        function applyTheme(theme, persist = false) {
+            document.documentElement.dataset.theme = theme;
+            document.documentElement.style.colorScheme = theme;
+
+            if (persist) {
+                try {
+                    localStorage.setItem(storageKey, theme);
+                } catch (error) {
+                    // 저장 실패 시에도 현재 페이지의 테마 전환은 유지합니다.
+                }
+            }
+
+            const toggle = document.getElementById('themeToggle');
+            if (toggle) {
+                toggle.setAttribute('aria-pressed', String(theme === 'dark'));
+                toggle.setAttribute('aria-label', `현재 ${theme === 'dark' ? '다크' : '화이트'} 모드. 테마 변경`);
+            }
+
+            window.dispatchEvent(new CustomEvent('pm2dash:themechange', { detail: { theme } }));
+        }
+
+        window.PM2DashTheme = { apply: applyTheme, current: getSavedTheme };
+        applyTheme(getSavedTheme());
+
+        document.addEventListener('DOMContentLoaded', () => {
+            applyTheme(document.documentElement.dataset.theme || getSavedTheme());
+            document.getElementById('themeToggle')?.addEventListener('click', () => {
+                const nextTheme = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+                applyTheme(nextTheme, true);
+            });
+        });
+    })();
+</script>
+
+<style>
+    html,
+    body {
+        min-height: 100%;
+    }
+
+    body,
+    .theme-toggle,
+    .theme-option {
+        transition-property: background-color, border-color, color, box-shadow;
+        transition-duration: 180ms;
+        transition-timing-function: ease;
+    }
+
+    .theme-toggle {
+        display: inline-flex;
+        flex: none;
+        align-items: center;
+        gap: 0.2rem;
+        padding: 0.25rem;
+        border: 1px solid #3f3f46;
+        border-radius: 0.75rem;
+        background: rgba(24, 24, 27, 0.8);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+        color: #a1a1aa;
+        font-size: 0.7rem;
+        font-weight: 700;
+        line-height: 1;
+        white-space: nowrap;
+    }
+
+    .theme-toggle:focus-visible {
+        outline: 2px solid #3b82f6;
+        outline-offset: 2px;
+    }
+
+    .theme-option {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        padding: 0.5rem 0.6rem;
+        border-radius: 0.5rem;
+    }
+
+    .theme-option svg {
+        width: 0.85rem;
+        height: 0.85rem;
+    }
+
+    html[data-theme="dark"] .theme-option[data-theme-value="dark"] {
+        background: #3f3f46;
+        color: #fafafa;
+    }
+
+    html[data-theme="light"] .theme-toggle {
+        border-color: #d4d4d8;
+        background: rgba(255, 255, 255, 0.9);
+        color: #71717a;
+        box-shadow: 0 8px 24px rgba(24, 24, 27, 0.08);
+    }
+
+    html[data-theme="light"] .theme-option[data-theme-value="light"] {
+        background: #e4e4e7;
+        color: #18181b;
+    }
+
+    html[data-theme="light"] body {
+        background-color: #f4f4f5 !important;
+        color: #18181b !important;
+    }
+
+    html[data-theme="light"] [class~="bg-zinc-950"] {
+        background-color: #ffffff !important;
+    }
+
+    html[data-theme="light"] [class~="bg-zinc-900"],
+    html[data-theme="light"] [class~="bg-zinc-900/20"],
+    html[data-theme="light"] [class~="bg-zinc-900/30"],
+    html[data-theme="light"] [class~="bg-zinc-900/50"] {
+        background-color: rgba(255, 255, 255, 0.88) !important;
+    }
+
+    html[data-theme="light"] [class~="bg-zinc-800"],
+    html[data-theme="light"] [class~="bg-zinc-800/20"],
+    html[data-theme="light"] [class~="bg-zinc-800/40"],
+    html[data-theme="light"] [class~="bg-zinc-800/50"],
+    html[data-theme="light"] [class~="bg-zinc-800/60"] {
+        background-color: #e4e4e7 !important;
+    }
+
+    html[data-theme="light"] [class~="bg-black/20"],
+    html[data-theme="light"] [class~="bg-black/40"] {
+        background-color: rgba(228, 228, 231, 0.55) !important;
+    }
+
+    html[data-theme="light"] [class~="border-zinc-800"],
+    html[data-theme="light"] [class~="border-zinc-800/30"],
+    html[data-theme="light"] [class~="border-zinc-800/50"],
+    html[data-theme="light"] [class~="border-zinc-800/60"],
+    html[data-theme="light"] [class~="border-zinc-700"] {
+        border-color: #d4d4d8 !important;
+    }
+
+    html[data-theme="light"] [class~="text-white"],
+    html[data-theme="light"] [class~="text-zinc-100"],
+    html[data-theme="light"] [class~="text-zinc-200"] {
+        color: #18181b !important;
+    }
+
+    html[data-theme="light"] [class~="text-zinc-300"] {
+        color: #3f3f46 !important;
+    }
+
+    html[data-theme="light"] [class~="text-zinc-400"] {
+        color: #52525b !important;
+    }
+
+    html[data-theme="light"] [class~="text-zinc-500"],
+    html[data-theme="light"] [class~="text-zinc-600"] {
+        color: #71717a !important;
+    }
+
+    html[data-theme="light"] [class~="bg-blue-600"][class~="text-white"],
+    html[data-theme="light"] [class~="bg-red-600"][class~="text-white"],
+    html[data-theme="light"] [class~="bg-green-600"][class~="text-white"] {
+        color: #ffffff !important;
+    }
+
+    html[data-theme="light"] input {
+        color: #18181b !important;
+    }
+
+    html[data-theme="light"] input::placeholder {
+        color: #a1a1aa;
+    }
+
+    html[data-theme="light"] #logModal {
+        background-color: rgba(9, 9, 11, 0.78) !important;
+    }
+
+    html[data-theme="light"] #logContainer,
+    html[data-theme="light"] #logContainer [class~="text-zinc-300"],
+    html[data-theme="light"] #logContainer [class~="text-zinc-500"],
+    html[data-theme="light"] #logContainer [class~="text-zinc-600"] {
+        color: #d4d4d8 !important;
+    }
+
+    html[data-theme="light"] #logContainer {
+        background-color: #09090b !important;
+    }
+
+    html[data-theme="light"] ::-webkit-scrollbar-track {
+        background: #f4f4f5;
+    }
+
+    html[data-theme="light"] ::-webkit-scrollbar-thumb {
+        background: #d4d4d8;
+    }
+
+    html[data-theme="light"] ::-webkit-scrollbar-thumb:hover {
+        background: #a1a1aa;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        body,
+        body * {
+            transition-duration: 0ms !important;
+        }
+    }
+</style>

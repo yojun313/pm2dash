@@ -1,4 +1,5 @@
 import asyncio
+import logging
 from fastapi import (
     APIRouter,
     Request,
@@ -11,13 +12,32 @@ from fastapi.responses import RedirectResponse
 import psutil
 from app.services.pm2_service import PM2Service
 from app.services.auth_service import AuthService
+from app.services.ai_usage_service import AIUsageService
 
 router = APIRouter()
 templates = Jinja2Templates(directory="app/templates")
+logger = logging.getLogger(__name__)
 
 
 @router.get("/")
-async def pm2_manager_page(request: Request):
+async def dashboard_overview_page(request: Request):
+    if not AuthService.is_authenticated(request):
+        return RedirectResponse(url="/login")
+
+    return templates.TemplateResponse(
+        request=request,
+        name="process.html",
+        context={
+            "processes": [],
+            "active_page": "overview",
+            "page_title": "Dashboard Overview",
+            "page_description": "서버와 AI 도구의 운영 현황을 한곳에서 관리합니다.",
+        },
+    )
+
+
+@router.get("/server")
+async def server_resources_page(request: Request):
     if not AuthService.is_authenticated(request):
         return RedirectResponse(url="/login")
 
@@ -25,8 +45,37 @@ async def pm2_manager_page(request: Request):
     return templates.TemplateResponse(
         request=request,
         name="process.html",
-        context={"processes": processes, "active_page": "pm2"},
+        context={
+            "processes": processes,
+            "active_page": "server",
+            "page_title": "Server & Processes",
+            "page_description": "서버 자원과 PM2 프로세스를 한 페이지에서 실시간으로 관리합니다.",
+        },
     )
+
+
+@router.get("/ai-usage")
+async def ai_usage_page(request: Request):
+    if not AuthService.is_authenticated(request):
+        return RedirectResponse(url="/login")
+
+    return templates.TemplateResponse(
+        request=request,
+        name="process.html",
+        context={
+            "processes": [],
+            "active_page": "ai_usage",
+            "page_title": "AI Usage",
+            "page_description": "Claude Code와 Codex의 최근 로컬 사용 기록을 확인합니다.",
+        },
+    )
+
+
+@router.get("/processes")
+async def pm2_manager_page(request: Request):
+    if not AuthService.is_authenticated(request):
+        return RedirectResponse(url="/login")
+    return RedirectResponse(url="/server")
 
 
 @router.post("/control/{action}/{name}")
@@ -82,6 +131,13 @@ async def get_server_stats(request: Request):
     }
 
 
+@router.get("/api/ai-usage")
+async def get_ai_usage(request: Request, days: int = 7):
+    if not AuthService.is_authenticated(request):
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    return await asyncio.to_thread(AIUsageService.get_usage, days)
+
+
 @router.websocket("/ws/logs/{name}")
 async def websocket_endpoint(websocket: WebSocket, name: str):
     if not websocket.session.get("user"):
@@ -115,7 +171,7 @@ async def websocket_endpoint(websocket: WebSocket, name: str):
         if process.returncode is None:
             process.terminate()
     except Exception as e:
-        print(f"Log Streaming Error for {name}: {e}")
+        logger.exception("프로세스 로그 스트리밍 오류 · process=%s · error=%s", name, e)
     finally:
         if process.returncode is None:
             process.terminate()
