@@ -2,7 +2,7 @@ import os
 from fastapi import FastAPI
 from starlette.middleware.sessions import SessionMiddleware
 from dotenv import load_dotenv
-from app.routes import pm2_routes, auth_routes
+from app.routes import auth_routes, git_routes, pm2_routes
 
 load_dotenv()
 
@@ -16,3 +16,4 @@ app.add_middleware(
 
 app.include_router(auth_routes.router)
 app.include_router(pm2_routes.router)
+app.include_router(git_routes.router)

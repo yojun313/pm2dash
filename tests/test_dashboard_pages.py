@@ -45,5 +45,18 @@ class DashboardPageTemplateTests(unittest.TestCase):
         self.assertNotIn('id="server-overview"', html)
         self.assertNotIn('id="pm2-list-body"', html)
 
+    def test_git_page_renders_repository_manager(self):
+        html = self.render("git")
+
+        self.assertIn('id="git-manager"', html)
+        self.assertIn('id="gitRepositoryList"', html)
+        self.assertIn('data-git-action="fetch"', html)
+        self.assertIn('data-git-action="pull"', html)
+        self.assertIn('data-git-action="push"', html)
+        self.assertIn('id="gitCommitList"', html)
+        self.assertIn('id="gitConsole"', html)
+        self.assertNotIn('id="server-overview"', html)
+        self.assertNotIn('id="aiUsageChart"', html)
+
 if __name__ == "__main__":
     unittest.main()

@@ -78,6 +78,10 @@
                     <span class="flex h-7 w-7 items-center justify-center rounded-lg text-[10px] font-mono {{ 'bg-blue-500/10' if active_page == 'ai_usage' else 'bg-zinc-800' }}">AI</span>
                     AI 사용량
                 </a>
+                <a href="/git" class="sidebar-link flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm {{ 'bg-cyan-500/10 font-bold text-cyan-400' if active_page == 'git' else 'font-semibold text-zinc-400 hover:bg-zinc-800/50 hover:text-zinc-100' }}" {% if active_page == 'git' %}aria-current="page"{% endif %}>
+                    <span class="flex h-7 w-7 items-center justify-center rounded-lg text-[10px] font-mono {{ 'bg-cyan-500/10' if active_page == 'git' else 'bg-zinc-800' }}">GIT</span>
+                    Git 관리
+                </a>
             </nav>
 
             <div class="mt-auto rounded-2xl border border-zinc-800 bg-zinc-950 p-3">
@@ -93,7 +97,7 @@
         </div>
     </aside>
 
-    <div class="max-w-7xl mx-auto">
+    <div class="{{ 'max-w-[1600px]' if active_page == 'git' else 'max-w-7xl' }} mx-auto">
         <div class="mb-8 flex flex-col xl:flex-row xl:items-end justify-between gap-6">
             <div>
                 <h1 class="text-2xl font-bold text-white tracking-tight">{{ page_title }}</h1>
@@ -149,7 +153,7 @@
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
                 <a href="/server" class="group rounded-2xl border border-zinc-800 bg-zinc-900/30 p-5 hover:border-blue-500/40 hover:bg-zinc-900/50">
                     <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-500/10 font-mono text-xs font-bold text-blue-400">OPS</div>
                     <h3 class="mt-5 font-bold text-zinc-100">서버 & 프로세스</h3>
@@ -162,6 +166,97 @@
                     <p class="mt-1 text-xs leading-5 text-zinc-500">Claude Code와 Codex의 최근 토큰 사용 기록을 비교합니다.</p>
                     <p class="mt-5 text-xs font-bold text-orange-400">페이지 열기 →</p>
                 </a>
+                <a href="/git" class="group rounded-2xl border border-zinc-800 bg-zinc-900/30 p-5 hover:border-cyan-500/40 hover:bg-zinc-900/50">
+                    <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-cyan-500/10 font-mono text-xs font-bold text-cyan-400">GIT</div>
+                    <h3 class="mt-5 font-bold text-zinc-100">Git 관리</h3>
+                    <p class="mt-1 text-xs leading-5 text-zinc-500">저장소 상태와 커밋 로그를 확인하고 Fetch, Pull, Push를 실행합니다.</p>
+                    <p class="mt-5 text-xs font-bold text-cyan-400">페이지 열기 →</p>
+                </a>
+            </div>
+        </section>
+        {% endif %}
+
+        {% if active_page == 'git' %}
+        <section id="git-manager" class="overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-900/20">
+            <div class="grid min-h-[680px] xl:grid-cols-[260px_minmax(0,1fr)]">
+                <aside class="border-b border-zinc-800 bg-zinc-950/40 p-4 xl:border-b-0 xl:border-r">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-xs font-bold uppercase tracking-[0.16em] text-zinc-400">Repositories</p>
+                            <p id="gitRepositoryCount" class="mt-1 text-[10px] text-zinc-600">검색 중...</p>
+                        </div>
+                        <button id="gitRefreshRepositories" type="button" class="flex h-8 w-8 items-center justify-center rounded-lg border border-zinc-800 bg-zinc-900 text-zinc-500 hover:text-cyan-400" aria-label="저장소 목록 새로고침">↻</button>
+                    </div>
+                    <label class="relative mt-4 block">
+                        <span class="sr-only">저장소 검색</span>
+                        <input id="gitRepositorySearch" type="search" placeholder="저장소 이름으로 검색" class="w-full rounded-lg border border-zinc-800 bg-zinc-900 px-3 py-2 pr-8 text-xs text-zinc-200 outline-none focus:border-cyan-500">
+                        <span class="pointer-events-none absolute right-3 top-2 text-xs text-zinc-600">⌕</span>
+                    </label>
+                    <div id="gitRepositoryList" class="mt-3 max-h-52 space-y-1 overflow-y-auto pr-1 xl:max-h-[560px]">
+                        <div class="rounded-xl border border-zinc-800/60 px-3 py-4 text-center text-xs text-zinc-600">저장소를 찾고 있습니다.</div>
+                    </div>
+                    <div class="mt-4 rounded-xl border border-zinc-800 bg-zinc-900/50 p-3 text-[10px] leading-5 text-zinc-600">
+                        <p class="font-bold text-zinc-500">저장소 검색 위치</p>
+                        <p class="mt-1">기본값은 PM2Dash 상위 폴더입니다. 서버 환경 변수 <span class="font-mono text-zinc-500">GIT_REPOSITORY_ROOTS</span>로 변경할 수 있습니다.</p>
+                    </div>
+                </aside>
+
+                <div class="min-w-0 p-4 sm:p-6">
+                    <div id="gitEmptyState" class="flex min-h-[560px] items-center justify-center text-center">
+                        <div>
+                            <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl border border-zinc-800 bg-zinc-900 font-mono text-sm font-bold text-cyan-400">GIT</div>
+                            <p class="mt-4 text-sm font-bold text-zinc-300">저장소를 선택하세요.</p>
+                            <p class="mt-1 text-xs text-zinc-600">왼쪽 목록에서 관리할 Git 저장소를 고르세요.</p>
+                        </div>
+                    </div>
+
+                    <div id="gitRepositoryDetail" class="hidden">
+                        <div class="flex flex-col gap-4 border-b border-zinc-800 pb-5 lg:flex-row lg:items-center lg:justify-between">
+                            <div class="min-w-0">
+                                <div class="flex items-center gap-2">
+                                    <span id="gitDirtyDot" class="h-2 w-2 rounded-full bg-emerald-500"></span>
+                                    <h2 id="gitRepositoryName" class="truncate text-lg font-bold text-white">—</h2>
+                                </div>
+                                <p id="gitRepositoryPath" class="mt-1 truncate font-mono text-[10px] text-zinc-600">—</p>
+                            </div>
+                            <div class="flex flex-wrap items-center gap-2">
+                                <label class="mr-1 flex cursor-pointer items-center gap-2 text-[10px] font-bold text-zinc-500">
+                                    <input id="gitRebase" type="checkbox" class="h-3.5 w-3.5 rounded border-zinc-700 bg-zinc-900 accent-violet-500">
+                                    Pull rebase
+                                </label>
+                                <button data-git-action="fetch" type="button" class="git-action rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-xs font-bold text-zinc-300 hover:bg-zinc-800">Fetch</button>
+                                <button data-git-action="pull" type="button" class="git-action rounded-lg bg-violet-600 px-3 py-2 text-xs font-bold text-white hover:bg-violet-500">Pull</button>
+                                <button data-git-action="push" type="button" class="git-action rounded-lg bg-cyan-600 px-3 py-2 text-xs font-bold text-white hover:bg-cyan-500">Push</button>
+                            </div>
+                        </div>
+
+                        <div class="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                            <article class="rounded-xl border border-zinc-800 bg-zinc-900/40 p-4"><p class="text-[9px] font-bold uppercase tracking-wider text-zinc-600">Branch</p><p id="gitBranch" class="mt-2 truncate font-mono text-sm font-bold text-cyan-400">—</p></article>
+                            <article class="rounded-xl border border-zinc-800 bg-zinc-900/40 p-4"><p class="text-[9px] font-bold uppercase tracking-wider text-zinc-600">Working tree</p><p id="gitWorkingTree" class="mt-2 text-sm font-bold text-emerald-400">—</p></article>
+                            <article class="rounded-xl border border-zinc-800 bg-zinc-900/40 p-4"><p class="text-[9px] font-bold uppercase tracking-wider text-zinc-600">Ahead / Behind</p><p id="gitAheadBehind" class="mt-2 font-mono text-sm font-bold text-emerald-400">↑0 ↓0</p></article>
+                            <article class="rounded-xl border border-zinc-800 bg-zinc-900/40 p-4"><p class="text-[9px] font-bold uppercase tracking-wider text-zinc-600">Recent commit</p><p id="gitRecentCommit" class="mt-2 truncate font-mono text-xs font-bold text-zinc-300">—</p></article>
+                        </div>
+
+                        <div class="mt-5 flex gap-1 overflow-x-auto border-b border-zinc-800" role="tablist" aria-label="Git 저장소 정보">
+                            <button data-git-tab="commits" class="git-tab border-b-2 border-cyan-400 px-4 py-3 text-xs font-bold text-cyan-400" role="tab">커밋 로그</button>
+                            <button data-git-tab="branches" class="git-tab border-b-2 border-transparent px-4 py-3 text-xs font-bold text-zinc-500" role="tab">브랜치</button>
+                            <button data-git-tab="changes" class="git-tab border-b-2 border-transparent px-4 py-3 text-xs font-bold text-zinc-500" role="tab">변경사항 <span id="gitChangesCount" class="ml-1 rounded bg-zinc-800 px-1.5 py-0.5 text-[9px]">0</span></button>
+                            <button data-git-tab="console" class="git-tab border-b-2 border-transparent px-4 py-3 text-xs font-bold text-zinc-500" role="tab">콘솔 <span id="gitConsoleDot" class="ml-1 inline-block h-1.5 w-1.5 rounded-full bg-zinc-700"></span></button>
+                        </div>
+
+                        <div id="gitPanel-commits" class="git-panel overflow-x-auto">
+                            <table class="w-full min-w-[660px] text-left"><thead><tr class="border-b border-zinc-800 text-[9px] uppercase tracking-wider text-zinc-600"><th class="px-3 py-3">Commit</th><th class="px-3 py-3">Message</th><th class="px-3 py-3 text-right">Author / Date</th></tr></thead><tbody id="gitCommitList"></tbody></table>
+                        </div>
+                        <div id="gitPanel-branches" class="git-panel hidden"><div id="gitBranchList" class="divide-y divide-zinc-800"></div></div>
+                        <div id="gitPanel-changes" class="git-panel hidden"><div id="gitChangeList" class="divide-y divide-zinc-800"></div></div>
+                        <div id="gitPanel-console" class="git-panel hidden pt-4">
+                            <div class="overflow-hidden rounded-xl border border-zinc-800 bg-black">
+                                <div class="flex items-center justify-between border-b border-zinc-800 px-4 py-2"><span class="font-mono text-[10px] text-zinc-500">GIT COMMAND OUTPUT</span><button id="gitClearConsole" class="text-[10px] font-bold text-zinc-600 hover:text-zinc-300">비우기</button></div>
+                                <pre id="gitConsole" class="min-h-64 max-h-96 overflow-auto whitespace-pre-wrap break-all p-4 font-mono text-[11px] leading-5 text-zinc-400">Git 작업 결과가 여기에 표시됩니다.</pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </section>
         {% endif %}
@@ -635,6 +730,184 @@
             }
         }
 
+        const gitState = {
+            repositories: [],
+            selectedId: null,
+            detailRequest: 0,
+        };
+
+        function escapeHtml(value) {
+            return String(value ?? '')
+                .replaceAll('&', '&amp;')
+                .replaceAll('<', '&lt;')
+                .replaceAll('>', '&gt;')
+                .replaceAll('"', '&quot;')
+                .replaceAll("'", '&#039;');
+        }
+
+        function formatGitDate(value) {
+            const date = new Date(value);
+            if (Number.isNaN(date.getTime())) return value || '—';
+            return new Intl.DateTimeFormat('ko-KR', {
+                year: '2-digit', month: '2-digit', day: '2-digit',
+                hour: '2-digit', minute: '2-digit'
+            }).format(date);
+        }
+
+        function setGitTab(name) {
+            document.querySelectorAll('.git-panel').forEach((panel) => panel.classList.add('hidden'));
+            document.getElementById(`gitPanel-${name}`)?.classList.remove('hidden');
+            document.querySelectorAll('.git-tab').forEach((tab) => {
+                const active = tab.dataset.gitTab === name;
+                tab.classList.toggle('border-cyan-400', active);
+                tab.classList.toggle('text-cyan-400', active);
+                tab.classList.toggle('border-transparent', !active);
+                tab.classList.toggle('text-zinc-500', !active);
+            });
+        }
+
+        function renderGitRepositoryList() {
+            const container = document.getElementById('gitRepositoryList');
+            const search = (document.getElementById('gitRepositorySearch')?.value || '').trim().toLowerCase();
+            if (!container) return;
+            const repositories = gitState.repositories.filter((repository) =>
+                repository.name.toLowerCase().includes(search) || repository.path.toLowerCase().includes(search)
+            );
+            if (!repositories.length) {
+                container.innerHTML = `<div class="rounded-xl border border-zinc-800/60 px-3 py-4 text-center text-xs text-zinc-600">${gitState.repositories.length ? '검색 결과가 없습니다.' : '발견된 Git 저장소가 없습니다.'}</div>`;
+                return;
+            }
+            container.innerHTML = repositories.map((repository) => {
+                const selected = repository.id === gitState.selectedId;
+                return `
+                    <button type="button" data-repository-id="${escapeHtml(repository.id)}" class="git-repository-item w-full rounded-xl border px-3 py-2.5 text-left transition ${selected ? 'border-cyan-500/30 bg-cyan-500/10' : 'border-transparent hover:border-zinc-800 hover:bg-zinc-900'}">
+                        <span class="flex items-center gap-2 text-xs font-bold ${selected ? 'text-cyan-300' : 'text-zinc-300'}"><span class="h-1.5 w-1.5 rounded-full ${selected ? 'bg-cyan-400' : 'bg-zinc-600'}"></span>${escapeHtml(repository.name)}</span>
+                        <span class="mt-1 block truncate font-mono text-[9px] text-zinc-600">${escapeHtml(repository.path)}</span>
+                    </button>`;
+            }).join('');
+            container.querySelectorAll('.git-repository-item').forEach((button) => {
+                button.addEventListener('click', () => selectGitRepository(button.dataset.repositoryId));
+            });
+        }
+
+        async function loadGitRepositories(preserveSelection = true) {
+            const count = document.getElementById('gitRepositoryCount');
+            if (count) count.textContent = '검색 중...';
+            try {
+                const response = await fetch('/api/git/repositories');
+                if (!response.ok) throw new Error('저장소 목록을 불러오지 못했습니다.');
+                const data = await response.json();
+                gitState.repositories = data.repositories || [];
+                if (count) count.textContent = `${gitState.repositories.length}개 저장소`;
+                const stillExists = gitState.repositories.some((repository) => repository.id === gitState.selectedId);
+                if (!preserveSelection || !stillExists) gitState.selectedId = null;
+                renderGitRepositoryList();
+                if (!gitState.selectedId && gitState.repositories.length) {
+                    await selectGitRepository(gitState.repositories[0].id);
+                }
+            } catch (error) {
+                if (count) count.textContent = '불러오기 실패';
+                const container = document.getElementById('gitRepositoryList');
+                if (container) container.innerHTML = `<div class="rounded-xl border border-red-500/20 bg-red-500/5 px-3 py-4 text-center text-xs text-red-400">${escapeHtml(error.message)}</div>`;
+            }
+        }
+
+        function renderGitDetail(detail) {
+            document.getElementById('gitEmptyState')?.classList.add('hidden');
+            document.getElementById('gitRepositoryDetail')?.classList.remove('hidden');
+            document.getElementById('gitRepositoryName').textContent = detail.name;
+            document.getElementById('gitRepositoryPath').textContent = detail.path;
+            document.getElementById('gitBranch').textContent = detail.branch;
+            document.getElementById('gitWorkingTree').textContent = detail.dirty ? `${detail.changes.length}개 변경` : '깨끗함';
+            document.getElementById('gitWorkingTree').className = `mt-2 text-sm font-bold ${detail.dirty ? 'text-amber-400' : 'text-emerald-400'}`;
+            document.getElementById('gitAheadBehind').textContent = detail.upstream ? `↑${detail.ahead} ↓${detail.behind}` : 'upstream 없음';
+            document.getElementById('gitAheadBehind').className = `mt-2 font-mono text-sm font-bold ${(detail.ahead || detail.behind) ? 'text-amber-400' : 'text-emerald-400'}`;
+            document.getElementById('gitDirtyDot').className = `h-2 w-2 rounded-full ${detail.dirty ? 'bg-amber-400' : 'bg-emerald-500'}`;
+            document.getElementById('gitChangesCount').textContent = detail.changes.length;
+            const recent = detail.commits[0];
+            document.getElementById('gitRecentCommit').textContent = recent ? `${recent.short_hash} · ${recent.subject}` : '커밋 없음';
+
+            const commitList = document.getElementById('gitCommitList');
+            commitList.innerHTML = detail.commits.length ? detail.commits.map((commit) => `
+                <tr class="border-b border-zinc-800/70 hover:bg-zinc-800/20">
+                    <td class="px-3 py-3 align-top"><span class="font-mono text-[11px] font-bold text-cyan-400">${escapeHtml(commit.short_hash)}</span></td>
+                    <td class="px-3 py-3 text-xs font-semibold text-zinc-300">${escapeHtml(commit.subject)}</td>
+                    <td class="px-3 py-3 text-right text-[10px] text-zinc-600"><span class="text-zinc-500">${escapeHtml(commit.author)}</span><br>${escapeHtml(formatGitDate(commit.date))}</td>
+                </tr>`).join('') : '<tr><td colspan="3" class="p-8 text-center text-xs text-zinc-600">표시할 커밋이 없습니다.</td></tr>';
+
+            const branchList = document.getElementById('gitBranchList');
+            branchList.innerHTML = detail.branches.length ? detail.branches.map((branch) => `
+                <div class="flex items-center justify-between gap-4 px-3 py-3 text-xs">
+                    <div class="min-w-0"><p class="truncate font-mono font-bold ${branch.current ? 'text-cyan-400' : 'text-zinc-300'}">${branch.current ? '● ' : ''}${escapeHtml(branch.name)}</p><p class="mt-1 text-[9px] text-zinc-600">${escapeHtml(branch.upstream || (branch.remote ? 'remote' : 'upstream 없음'))}</p></div>
+                    <span class="font-mono text-[10px] text-zinc-600">${escapeHtml(branch.hash)}</span>
+                </div>`).join('') : '<p class="p-8 text-center text-xs text-zinc-600">표시할 브랜치가 없습니다.</p>';
+
+            const changeList = document.getElementById('gitChangeList');
+            changeList.innerHTML = detail.changes.length ? detail.changes.map((change) => `
+                <div class="flex items-center gap-3 px-3 py-3 text-xs">
+                    <span class="w-7 rounded bg-zinc-800 px-1.5 py-1 text-center font-mono text-[9px] font-bold ${change.staged ? 'text-emerald-400' : 'text-amber-400'}">${escapeHtml(change.code)}</span>
+                    <span class="min-w-0 flex-1 truncate font-mono text-zinc-300">${escapeHtml(change.path)}</span>
+                    <span class="text-[10px] text-zinc-600">${escapeHtml(change.state)}${change.staged ? ' · staged' : ''}</span>
+                </div>`).join('') : '<p class="p-8 text-center text-xs text-emerald-500">작업 트리가 깨끗합니다.</p>';
+        }
+
+        async function selectGitRepository(repositoryId) {
+            gitState.selectedId = repositoryId;
+            renderGitRepositoryList();
+            const requestNumber = ++gitState.detailRequest;
+            document.getElementById('gitEmptyState')?.classList.remove('hidden');
+            document.getElementById('gitRepositoryDetail')?.classList.add('hidden');
+            const emptyMessage = document.querySelector('#gitEmptyState p.text-sm');
+            if (emptyMessage) emptyMessage.textContent = '저장소 정보를 불러오는 중입니다.';
+            try {
+                const response = await fetch(`/api/git/repositories/${encodeURIComponent(repositoryId)}`);
+                if (!response.ok) {
+                    const error = await response.json().catch(() => ({}));
+                    throw new Error(error.detail || '저장소 정보를 불러오지 못했습니다.');
+                }
+                const detail = await response.json();
+                if (requestNumber !== gitState.detailRequest) return;
+                renderGitDetail(detail);
+            } catch (error) {
+                if (requestNumber !== gitState.detailRequest) return;
+                if (emptyMessage) emptyMessage.textContent = error.message;
+            }
+        }
+
+        function writeGitConsole(message, append = true) {
+            const consoleElement = document.getElementById('gitConsole');
+            if (!consoleElement) return;
+            const prefix = `[${new Date().toLocaleTimeString('ko-KR')}] `;
+            consoleElement.textContent = append ? `${consoleElement.textContent}\n\n${prefix}${message}` : `${prefix}${message}`;
+            consoleElement.scrollTop = consoleElement.scrollHeight;
+            document.getElementById('gitConsoleDot')?.classList.replace('bg-zinc-700', 'bg-cyan-400');
+        }
+
+        async function runGitAction(action) {
+            if (!gitState.selectedId) return;
+            if ((action === 'pull' || action === 'push') && !confirm(`현재 저장소에서 Git ${action.toUpperCase()} 작업을 실행하시겠습니까?`)) return;
+            const buttons = document.querySelectorAll('.git-action');
+            buttons.forEach((button) => { button.disabled = true; button.classList.add('opacity-50'); });
+            setGitTab('console');
+            writeGitConsole(`git ${action} 실행 중...`);
+            try {
+                const response = await fetch(`/api/git/repositories/${encodeURIComponent(gitState.selectedId)}/${action}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ rebase: document.getElementById('gitRebase')?.checked || false })
+                });
+                const result = await response.json().catch(() => ({}));
+                if (!response.ok) throw new Error(result.detail || 'Git 작업 요청이 실패했습니다.');
+                writeGitConsole(`$ ${result.command}\n${result.output}\n\n${result.success ? '✓ 작업 완료' : `✕ 작업 실패 (code ${result.return_code})`}`);
+                await selectGitRepository(gitState.selectedId);
+                setGitTab('console');
+            } catch (error) {
+                writeGitConsole(`✕ ${error.message}`);
+            } finally {
+                buttons.forEach((button) => { button.disabled = false; button.classList.remove('opacity-50'); });
+            }
+        }
+
         async function checkStartupStatus() {
             const badge = document.getElementById('startupBadge');
             if (!badge) return;
@@ -901,6 +1174,17 @@
         if (document.getElementById('aiUsageChart')) {
             updateAIUsage();
             setInterval(updateAIUsage, 60000);
+        }
+        if (document.getElementById('git-manager')) {
+            loadGitRepositories();
+            document.getElementById('gitRepositorySearch')?.addEventListener('input', renderGitRepositoryList);
+            document.getElementById('gitRefreshRepositories')?.addEventListener('click', () => loadGitRepositories(true));
+            document.querySelectorAll('.git-tab').forEach((tab) => tab.addEventListener('click', () => setGitTab(tab.dataset.gitTab)));
+            document.querySelectorAll('.git-action').forEach((button) => button.addEventListener('click', () => runGitAction(button.dataset.gitAction)));
+            document.getElementById('gitClearConsole')?.addEventListener('click', () => {
+                document.getElementById('gitConsole').textContent = 'Git 작업 결과가 여기에 표시됩니다.';
+                document.getElementById('gitConsoleDot')?.classList.replace('bg-cyan-400', 'bg-zinc-700');
+            });
         }
 
         const sidebar = document.getElementById('sidebar');
