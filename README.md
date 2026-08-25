@@ -12,6 +12,7 @@ FastAPI 기반의 실시간 PM2 프로세스 모니터링 및 관리 대시보�
 * 실시간 로그 스트리밍: WebSocket을 통한 실시간 프로세스 로그 확인
 * 보안 접속: 환경 변수 기반의 관리자 로그인 기능 (ID/PW 세션 인증)
 * AI 사용량: 서버의 Claude Code 및 Codex 로컬 세션 기록을 최근 7일 그래프로 집계
+* Git 관리: 로컬 저장소 상태, 브랜치, 변경 파일, 커밋 로그 확인 및 Fetch/Pull/Push 실행
 * 테마 및 탐색: 화이트/다크 모드와 반응형 사이드바 제공
 * Rich 터미널 로그: 실행 정보 패널, 컬러 로그 레벨 및 읽기 쉬운 오류 traceback 제공
 
@@ -45,6 +46,12 @@ Claude Code와 Codex가 일반적인 사용자 홈 디렉터리가 아닌 경로
 ```env
 CLAUDE_DATA_DIR=/home/user/.claude
 CODEX_DATA_DIR=/home/user/.codex
+
+# 선택: Git 저장소를 찾을 상위 폴더. 여러 경로는 OS 경로 구분자(: 또는 ;)로 연결
+GIT_REPOSITORY_ROOTS=/home/user
+
+# 선택: 검색 없이 특정 저장소만 노출할 때 사용
+GIT_REPOSITORIES=/srv/app-one:/srv/app-two
 ```
 
 ### 3. 대시보드 실행
